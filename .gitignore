@@ -1,46 +1,25 @@
-# 密钥与本机状态
+# 凭据与本机状态
 .env
 *.db
-*.sqlite
 *.log
 panel/logs/
 startup/online.log
-dy_profile/
-dy_state.json
-bili_login_qr*.png
-dy_login_qr*.png
-ck.txt
+startup/github_dns_proxy.py
 
 # 运行产物
 __pycache__/
 *.pyc
 .pytest_cache/
 
-# 第三方与素材：体积大且有授权限制，不随仓库分发
+# 素材与第三方：体积大且有授权限制，不随仓库分发
 vendor/
 assets/
-data/
 
-# 其它本地项目与临时抓取
-_ip_staging/
-_ip_tools/
-视频工作台/
-vibe_images/
-jcc-coach/
+# 本地调试产物
+scratch/
 
-# 调试抓取与截图
-s_*.html
-_dy_*.html
-_dy_*.png
-_*.png
-tmp_*.png
-bs.json
-bv_*.json
-dyn.json
-ex.html
-
-# 暂不公开的平台脚本（B站/抖音，含个人账号自动化）
-bili_*.py
-dy_*.py
-_ip_fetch*.sh
-startup/github_dns_proxy.py
+# 已搬出本仓库的东西（不再是这里的黑名单）：
+#   B站/抖音个人账号自动化 → D:\项目\大肥鱼平台自动化（私有仓库）
+#   IP 素材抓取与整理     → D:\项目\桌宠IP素材搬运
+#   短剧渲染工程与素材    → D:\项目\大肥鱼短剧工作台
+#   金铲铲教练           → D:\项目\jcc-coach

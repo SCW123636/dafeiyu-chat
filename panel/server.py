@@ -1,6 +1,6 @@
 """大肥鱼中控台：本地面板后端（127.0.0.1:3002）。
 
-只读聚合 metrics.db / bili_play.db / dy_play.db，并通过子进程管理三端任务。
+只读聚合 metrics.db 与平台目录里的 bili_play.db / dy_play.db，并通过子进程管理三端任务。
 """
 import argparse
 import ast
@@ -37,9 +37,12 @@ PANEL_DIR = os.path.dirname(os.path.abspath(__file__))
 INDEX = os.path.join(PANEL_DIR, "index.html")
 LOG_DIR = os.path.join(PANEL_DIR, "logs")
 DB_METRICS = os.path.join(ROOT, "metrics.db")
-DB_BILI = os.path.join(ROOT, "bili_play.db")
-DB_DY = os.path.join(ROOT, "dy_play.db")
-QR_BILI = os.path.join(ROOT, "bili_login_qr.png")
+# B站/抖音是个人的账号自动化，脚本与登录态放在公开仓库之外的平台目录
+PLAT = os.environ.get("DAFEIYU_PLATFORM_HOME") or os.path.join(
+    os.path.dirname(ROOT), "大肥鱼平台自动化")
+DB_BILI = os.path.join(PLAT, "bili_play.db")
+DB_DY = os.path.join(PLAT, "dy_play.db")
+QR_BILI = os.path.join(PLAT, "bili_login_qr.png")
 START = time.time()
 PORT = int(os.environ.get("PANEL_PORT", "3002"))
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -206,6 +209,10 @@ def _python(*args):
     return [sys.executable, "-u", *args]
 
 
+def _plat(name, *args):
+    return _python(os.path.join(PLAT, name), *args)
+
+
 def _port_open(port):
     try:
         with socket.create_connection(("127.0.0.1", port), timeout=0.35):
@@ -352,7 +359,7 @@ def _nav_state():
 
 
 def _dy_account():
-    state = os.path.join(ROOT, "dy_state.json")
+    state = os.path.join(PLAT, "dy_state.json")
     logged, method, ts = False, "none", 0
     try:
         with open(state, encoding="utf-8") as f:
@@ -365,7 +372,7 @@ def _dy_account():
         pass
     if not logged:
         for rel in ("dy_profile/Default/Network/Cookies", "dy_profile/Default/Cookies"):
-            path = os.path.join(ROOT, rel)
+            path = os.path.join(PLAT, rel)
             if not os.path.exists(path):
                 continue
             try:
@@ -423,16 +430,16 @@ def _ast_value(path, name, default=None):
 
 RISK = {
     "bili": {
-        "min_gap": _ast_value(os.path.join(ROOT, "bili_play.py"), "MIN_GAP", 90),
-        "max_per_hour": _ast_value(os.path.join(ROOT, "bili_play.py"), "MAX_PER_HOUR", 12),
-        "max_per_run": _ast_value(os.path.join(ROOT, "bili_play.py"), "MAX_PER_RUN", 20),
-        "min_new": _ast_value(os.path.join(ROOT, "bili_play.py"), "MIN_NEW_MSGS", 4),
+        "min_gap": _ast_value(os.path.join(PLAT, "bili_play.py"), "MIN_GAP", 90),
+        "max_per_hour": _ast_value(os.path.join(PLAT, "bili_play.py"), "MAX_PER_HOUR", 12),
+        "max_per_run": _ast_value(os.path.join(PLAT, "bili_play.py"), "MAX_PER_RUN", 20),
+        "min_new": _ast_value(os.path.join(PLAT, "bili_play.py"), "MIN_NEW_MSGS", 4),
     },
     "dy": {
-        "min_gap": _ast_value(os.path.join(ROOT, "dy_agent.py"), "MIN_GAP", 120),
-        "max_per_hour": _ast_value(os.path.join(ROOT, "dy_agent.py"), "MAX_PER_HOUR", 8),
-        "max_per_run": _ast_value(os.path.join(ROOT, "dy_agent.py"), "MAX_PER_RUN", 10),
-        "min_new": _ast_value(os.path.join(ROOT, "dy_agent.py"), "MIN_NEW_MSGS", 5),
+        "min_gap": _ast_value(os.path.join(PLAT, "dy_agent.py"), "MIN_GAP", 120),
+        "max_per_hour": _ast_value(os.path.join(PLAT, "dy_agent.py"), "MAX_PER_HOUR", 8),
+        "max_per_run": _ast_value(os.path.join(PLAT, "dy_agent.py"), "MAX_PER_RUN", 10),
+        "min_new": _ast_value(os.path.join(PLAT, "dy_agent.py"), "MIN_NEW_MSGS", 5),
     },
 }
 
@@ -444,11 +451,11 @@ PERSONA = {
         "model": MODEL, "temperature": 0.9, "context": 8,
     },
     "bili": {
-        "text": _ast_value(os.path.join(ROOT, "bili_play.py"), "SYSTEM", ""),
+        "text": _ast_value(os.path.join(PLAT, "bili_play.py"), "SYSTEM", ""),
         "model": MODEL, "temperature": 0.9, "context": 12,
     },
     "dy": {
-        "text": _ast_value(os.path.join(ROOT, "dy_agent.py"), "SYSTEM", ""),
+        "text": _ast_value(os.path.join(PLAT, "dy_agent.py"), "SYSTEM", ""),
         "model": MODEL, "temperature": 0.9, "context": 30,
     },
 }
@@ -779,7 +786,7 @@ def run_bili(p: BiliRun, _: None = Depends(check_origin)):
     minutes = _minutes(p.minutes)
     if not p.dry_run and not p.confirm:
         raise HTTPException(400, "真发需要二次确认")
-    cmd = _python("bili_play.py", "--minutes", str(minutes))
+    cmd = _plat("bili_play.py", "--minutes", str(minutes))
     if room:
         cmd += ["--room", room]
     if p.dry_run:
@@ -803,7 +810,7 @@ def run_dy(p: DyRun, _: None = Depends(check_origin)):
     minutes = _minutes(p.minutes)
     if not p.dry_run and not p.confirm:
         raise HTTPException(400, "真发需要二次确认")
-    cmd = _python("dy_agent.py", "--room", room, "--minutes", str(minutes))
+    cmd = _plat("dy_agent.py", "--room", room, "--minutes", str(minutes))
     if p.dry_run:
         cmd.append("--dry-run")
     RUNNERS["dy"].start(cmd, kind="run", info={
@@ -882,7 +889,7 @@ def login_bili(_: None = Depends(check_origin)):
         raise HTTPException(409, "B站任务正在跑，先停止再登录")
     if RUNNERS["login_bili"].running():
         raise HTTPException(409, "登录流程已经在跑")
-    RUNNERS["login_bili"].start(_python("bili_login.py"), kind="login")
+    RUNNERS["login_bili"].start(_plat("bili_login.py"), kind="login")
     return {"ok": True, "runner": RUNNERS["login_bili"].state()}
 
 
@@ -892,7 +899,7 @@ def login_dy(_: None = Depends(check_origin)):
         raise HTTPException(409, "抖音任务正在跑，先停止再登录")
     if RUNNERS["login_dy"].running():
         raise HTTPException(409, "抖音登录已经在跑")
-    RUNNERS["login_dy"].start(_python("dy_login.py"), kind="login")
+    RUNNERS["login_dy"].start(_plat("dy_login.py"), kind="login")
     return {"ok": True, "runner": RUNNERS["login_dy"].state()}
 
 
@@ -902,7 +909,7 @@ def check_dy(_: None = Depends(check_origin)):
         raise HTTPException(409, "抖音任务正在跑，先停止再检测")
     if RUNNERS["check_dy"].running():
         raise HTTPException(409, "检测已经在跑")
-    RUNNERS["check_dy"].start(_python("dy_login.py", "--check"), kind="check")
+    RUNNERS["check_dy"].start(_plat("dy_login.py", "--check"), kind="check")
     return {"ok": True, "runner": RUNNERS["check_dy"].state()}
 
 
@@ -911,7 +918,7 @@ def drafts_gen(p: GenReq, _: None = Depends(check_origin)):
     if RUNNERS["desk"].running():
         raise HTTPException(409, "运营台正在生成")
     n = max(1, min(int(p.n), 5))
-    RUNNERS["desk"].start(_python("bili_desk.py", "gen", "--n", str(n)), kind="desk")
+    RUNNERS["desk"].start(_plat("bili_desk.py", "gen", "--n", str(n)), kind="desk")
     return {"ok": True, "runner": RUNNERS["desk"].state()}
 
 
