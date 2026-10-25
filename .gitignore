@@ -43,3 +43,4 @@ ex.html
 bili_*.py
 dy_*.py
 _ip_fetch*.sh
+startup/github_dns_proxy.py
