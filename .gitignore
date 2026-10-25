@@ -1,0 +1,45 @@
+# 密钥与本机状态
+.env
+*.db
+*.sqlite
+*.log
+panel/logs/
+startup/online.log
+dy_profile/
+dy_state.json
+bili_login_qr*.png
+dy_login_qr*.png
+ck.txt
+
+# 运行产物
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# 第三方与素材：体积大且有授权限制，不随仓库分发
+vendor/
+assets/
+data/
+
+# 其它本地项目与临时抓取
+_ip_staging/
+_ip_tools/
+视频工作台/
+vibe_images/
+jcc-coach/
+
+# 调试抓取与截图
+s_*.html
+_dy_*.html
+_dy_*.png
+_*.png
+tmp_*.png
+bs.json
+bv_*.json
+dyn.json
+ex.html
+
+# 暂不公开的平台脚本（B站/抖音，含个人账号自动化）
+bili_*.py
+dy_*.py
+_ip_fetch*.sh

@@ -1,0 +1,1381 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#050a1c">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23050a1c'/%3E%3Cpath d='M7 18c0-5 4-8 9-8s9 3 9 8-4 7-9 7-9-2-9-7z' fill='%234d6bfe'/%3E%3Cpath d='M7 18l-4-4v8z' fill='%233450d8'/%3E%3Ccircle cx='21' cy='16' r='2' fill='%2306122e'/%3E%3Cpath d='M13 9l2-4 2 4' fill='none' stroke='%238fe9ff' stroke-width='1.6'/%3E%3C/svg%3E">
+<title>大肥鱼 · 深潜中控</title>
+<style>
+:root{
+  --bg:#06080a; --card:#0c1115; --card2:#090d10; --line:#1b242b;
+  --text:#e9e7e2; --dim:#7b878f; --dim2:#55636c;
+  --accent:#ff6a00; --green:#36d399; --red:#ff5252; --blue:#58a6ff;
+  --mono:"Cascadia Mono","JetBrains Mono","SFMono-Regular",Consolas,monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{
+  margin:0; color:var(--text); font-size:13px; line-height:1.5;
+  font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;
+  background:
+    radial-gradient(1100px 460px at 50% -220px, rgba(255,106,0,.11), transparent 62%),
+    radial-gradient(800px 500px at 100% 100%, rgba(88,166,255,.045), transparent 60%),
+    var(--bg);
+}
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.024) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.024) 1px, transparent 1px);
+  background-size:44px 44px;
+  -webkit-mask-image:radial-gradient(ellipse at 50% 0%, #000 25%, transparent 82%);
+  mask-image:radial-gradient(ellipse at 50% 0%, #000 25%, transparent 82%);
+}
+header,main,footer{position:relative; z-index:1}
+header{
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+  padding:18px clamp(14px,3vw,34px) 14px; border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(8,11,13,.9), rgba(8,11,13,.35));
+}
+.brand{display:flex; align-items:center; gap:12px; min-width:0}
+.brand img{
+  width:42px; height:42px; object-fit:cover; border-radius:2px;
+  border:1px solid #2b363e; box-shadow:0 0 0 3px rgba(255,106,0,.08);
+}
+.brand h1{margin:0; font-size:17px; letter-spacing:.06em; font-weight:700; white-space:nowrap}
+.brand h1 span{color:var(--accent); margin:0 4px}
+.brand p{margin:2px 0 0; font-family:var(--mono); font-size:9px; letter-spacing:.18em; color:var(--dim); white-space:nowrap}
+.brand p .slash{color:var(--accent)}
+.top-right{display:flex; align-items:center; gap:16px}
+.clock{font-family:var(--mono); font-size:18px; letter-spacing:.08em; color:#cfd6d9; font-variant-numeric:tabular-nums}
+.link{display:flex; align-items:center; gap:6px; font-family:var(--mono); font-size:9px; letter-spacing:.16em; color:var(--dim); border:1px solid var(--line); padding:6px 8px}
+.link i{width:6px; height:6px; border-radius:50%; background:var(--dim2); transition:.2s}
+.link.on{color:var(--green); border-color:rgba(54,211,153,.3)}
+.link.on i{background:var(--green); box-shadow:0 0 8px rgba(54,211,153,.8)}
+.link.err{color:var(--red); border-color:rgba(255,82,82,.35)}
+.link.err i{background:var(--red)}
+main{padding:14px clamp(14px,3vw,34px) 26px; display:flex; flex-direction:column; gap:14px}
+.card{
+  position:relative; background:linear-gradient(180deg, rgba(15,20,24,.96), rgba(9,13,16,.97));
+  border:1px solid var(--line); border-radius:2px; overflow:hidden;
+}
+.card::before{
+  content:""; position:absolute; left:0; right:0; top:0; height:1px; pointer-events:none;
+  background:linear-gradient(90deg, transparent, rgba(255,106,0,.5), transparent);
+  opacity:.5;
+}
+.kpis{display:grid; grid-template-columns:1.35fr 1fr 1fr 1fr 1fr; gap:10px}
+.kpi{position:relative; padding:12px 14px 11px; background:linear-gradient(180deg, #0e1418, #0a0e11); border:1px solid var(--line); overflow:hidden}
+.kpi::after{content:""; position:absolute; right:-18px; top:-18px; width:60px; height:60px; border:1px solid rgba(255,106,0,.12); transform:rotate(45deg)}
+.kpi label{display:block; font-family:var(--mono); font-size:9px; letter-spacing:.16em; color:var(--dim); text-transform:uppercase}
+.kpi b{display:block; margin-top:5px; font-family:var(--mono); font-size:29px; font-weight:600; line-height:1.05; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+.kpi b em{font-style:normal; font-size:11px; color:var(--dim); margin-left:3px; letter-spacing:.06em}
+.kpi .sub{font-family:var(--mono); font-size:9px; letter-spacing:.05em; color:var(--dim); margin-top:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.spark{display:flex; align-items:flex-end; gap:2px; height:28px; margin-top:8px}
+.spark i{flex:1; min-height:2px; background:rgba(255,106,0,.24); transition:height .5s ease}
+.spark i:last-child{background:var(--accent); box-shadow:0 0 8px rgba(255,106,0,.45)}
+.platforms{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px}
+.plat{display:flex; flex-direction:column}
+.card-top{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.045)}
+.card-top h2{margin:0; font-size:11px; letter-spacing:.14em; font-weight:600; color:#c8d0d4}
+.card-top h2 span{font-family:var(--mono); font-size:9px; color:var(--dim2); margin-left:6px; letter-spacing:.1em}
+.ptag{display:flex; align-items:baseline; gap:7px}
+.ptag .code{font-family:var(--mono); font-size:11px; letter-spacing:.16em; color:var(--accent)}
+.ptag span+span{font-size:11px; color:var(--dim)}
+.pill{display:inline-flex; align-items:center; gap:5px; font-family:var(--mono); font-size:9px; letter-spacing:.12em; padding:4px 7px; border:1px solid var(--line); color:var(--dim); white-space:nowrap}
+.pill i{width:5px; height:5px; border-radius:50%; background:var(--dim2)}
+.pill.on{color:var(--green); border-color:rgba(54,211,153,.32)}
+.pill.on i{background:var(--green); box-shadow:0 0 8px rgba(54,211,153,.8); animation:pulse 2.4s infinite}
+.pill.warn{color:var(--accent); border-color:rgba(255,106,0,.35)}
+.pill.warn i{background:var(--accent)}
+.pill.err{color:var(--red); border-color:rgba(255,82,82,.35)}
+.pill.err i{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.acct{display:flex; align-items:center; gap:7px; padding:8px 12px 0; font-family:var(--mono); font-size:10px; color:var(--dim); min-height:26px}
+.acct i{width:5px; height:5px; border-radius:50%; background:var(--dim2); flex:none}
+.acct span{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.acct.on i{background:var(--green); box-shadow:0 0 6px rgba(54,211,153,.7)}
+.acct.warn i{background:var(--accent)}
+.acct.err i{background:var(--red)}
+.readouts{display:grid; grid-template-columns:repeat(3,1fr); margin-top:9px; border-top:1px solid var(--line); border-bottom:1px solid var(--line)}
+.readouts>div{padding:9px 11px; border-right:1px solid var(--line); min-width:0}
+.readouts>div:last-child{border-right:0}
+.readouts label{display:block; font-family:var(--mono); font-size:8px; letter-spacing:.13em; color:var(--dim2); text-transform:uppercase; white-space:nowrap}
+.readouts b{display:inline-block; margin-top:2px; font-family:var(--mono); font-size:25px; font-weight:600; line-height:1.05; font-variant-numeric:tabular-nums}
+.readouts em{font-style:normal; font-family:var(--mono); font-size:9px; color:var(--dim2); margin-left:2px}
+.quota{height:2px; background:#141c21; margin:0 11px; position:relative; top:-1px}
+.quota i{display:block; height:100%; width:0; background:linear-gradient(90deg, rgba(255,106,0,.55), var(--accent)); transition:width .6s ease}
+.lastsay{padding:9px 12px 0; color:var(--dim); font-size:12px; min-height:34px; overflow-wrap:anywhere}
+.lastsay b{color:#cfd6d9; font-weight:400}
+.taskline{padding:2px 12px 0; font-family:var(--mono); font-size:9px; color:var(--dim2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:18px}
+.controls{padding:10px 12px 12px; display:grid; grid-template-columns:minmax(0,1fr) 74px; gap:7px; margin-top:auto}
+.field label{display:block; font-family:var(--mono); font-size:8px; letter-spacing:.12em; color:var(--dim2); margin-bottom:3px; text-transform:uppercase}
+input{
+  width:100%; padding:7px 8px; background:#070b0e; border:1px solid var(--line);
+  border-radius:2px; color:var(--text); font-family:var(--mono); font-size:12px;
+  font-variant-numeric:tabular-nums;
+}
+input::placeholder{color:#46525a}
+input:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 2px rgba(255,106,0,.1)}
+.switch{display:flex; align-items:center; gap:7px; font-size:11px; color:var(--dim); user-select:none; cursor:pointer; grid-column:1/-1; margin:2px 0}
+.switch input{
+  appearance:none; -webkit-appearance:none; width:28px; height:15px; padding:0; flex:none;
+  border-radius:9px; background:#151e24; border:1px solid var(--line); position:relative; cursor:pointer;
+}
+.switch input::after{content:""; position:absolute; top:2px; left:2px; width:9px; height:9px; border-radius:50%; background:var(--dim2); transition:.18s}
+.switch input:checked{background:rgba(255,106,0,.18); border-color:rgba(255,106,0,.55)}
+.switch input:checked::after{left:15px; background:var(--accent); box-shadow:0 0 6px rgba(255,106,0,.7)}
+.btns{grid-column:1/-1; display:flex; gap:6px; flex-wrap:wrap; margin-top:2px}
+button{
+  padding:7px 11px; border:1px solid var(--line); border-radius:2px; background:#111820;
+  color:var(--text); font-family:var(--mono); font-size:10px; letter-spacing:.06em;
+  cursor:pointer; transition:border-color .15s, background .15s, filter .15s;
+}
+button:hover{border-color:#3a4952; background:#152029}
+button.primary{background:var(--accent); border-color:var(--accent); color:#180b03; font-weight:700}
+button.primary:hover{filter:brightness(1.08)}
+button.ghost{background:transparent}
+button.small{padding:5px 8px; font-size:9px}
+button.linkish{padding:4px 7px; border-color:transparent; background:transparent; color:var(--dim)}
+button.linkish:hover{color:var(--accent); border-color:transparent}
+button:disabled{opacity:.3; cursor:not-allowed; filter:none}
+button.danger{color:var(--red); border-color:rgba(255,82,82,.35)}
+.qr-wrap{display:flex; gap:11px; align-items:center; margin:0 12px 12px; padding:9px; border:1px dashed #2a363e; background:#070b0e}
+.qr-wrap img{width:118px; height:118px; object-fit:contain; background:#fff; image-rendering:pixelated}
+.qr-wrap p{margin:0 0 8px; font-size:11px; color:var(--dim)}
+.note{padding:0 12px 12px; font-size:10px; color:var(--dim2); line-height:1.6}
+.note b{color:var(--accent); font-weight:500}
+.lower{display:grid; grid-template-columns:1.48fr .92fr; gap:10px; align-items:start}
+.side{display:flex; flex-direction:column; gap:10px}
+.chips{display:flex; gap:4px; flex-wrap:wrap}
+.chip{
+  padding:4px 7px; border:1px solid var(--line); background:transparent; color:var(--dim);
+  font-family:var(--mono); font-size:9px; letter-spacing:.08em; cursor:pointer;
+}
+.chip.active{color:var(--accent); border-color:rgba(255,106,0,.55); background:rgba(255,106,0,.06)}
+.events{height:446px; overflow:auto; padding:2px 12px 10px}
+.ev{display:grid; grid-template-columns:49px 42px 40px minmax(0,1fr); gap:8px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,.045); align-items:baseline}
+.ev time{font-family:var(--mono); font-size:9px; color:var(--dim2); font-variant-numeric:tabular-nums}
+.ev .tag{font-family:var(--mono); font-size:8px; letter-spacing:.08em; color:var(--dim2)}
+.ev[data-p="bili"] .tag{color:#e58bb0}
+.ev[data-p="dy"] .tag{color:#63d8d1}
+.ev[data-p="qq"] .tag{color:#7cb4ff}
+.ev[data-p="desk"] .tag{color:var(--accent)}
+.ev .kind{font-family:var(--mono); font-size:8px; letter-spacing:.06em; color:var(--dim)}
+.ev p{margin:0; color:#c5ced2; font-size:11.5px; overflow-wrap:anywhere}
+.ev[data-kind="say"] p{color:#9fe7c8}
+.ev[data-kind="say_dry"] p{color:#ffc08f}
+.ev[data-kind="skip"] p{color:#67757e}
+.ev[data-kind="drop"] p{color:#a88f6a}
+.ev[data-kind="error"] p{color:#ff8d8d}
+.ev[data-kind="join"] p{color:#c8d0d4}
+.ev[data-kind="stop"] p{color:#8c9aa2}
+.ev[data-kind="heard"] p{color:#9aa7ad}
+.empty{padding:26px 12px; color:var(--dim2); font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-align:center}
+.tabs{display:flex; gap:3px; flex-wrap:wrap}
+.tab{padding:4px 7px; border:1px solid transparent; background:transparent; color:var(--dim); font-family:var(--mono); font-size:9px; letter-spacing:.08em; cursor:pointer}
+.tab.active{color:var(--accent); border-color:rgba(255,106,0,.4); background:rgba(255,106,0,.05)}
+.hint{font-family:var(--mono); font-size:8px; letter-spacing:.1em; color:var(--dim2)}
+.meta-row{display:flex; gap:5px; flex-wrap:wrap; padding:9px 12px 0}
+.meta{font-family:var(--mono); font-size:8px; letter-spacing:.06em; color:var(--dim); border:1px solid var(--line); padding:3px 6px}
+.meta b{color:#c8d0d4; font-weight:500}
+.persona{max-height:208px; overflow:auto; margin:9px 12px 12px; padding:10px; background:#070b0e; border:1px solid var(--line); white-space:pre-wrap; overflow-wrap:anywhere; font-family:var(--mono); font-size:10.5px; line-height:1.75; color:#aeb9bf}
+.quality{padding:4px 12px 10px}
+.qrow{display:grid; grid-template-columns:42px repeat(4,minmax(0,1fr)); gap:6px; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.045)}
+.qrow:last-child{border-bottom:0}
+.qrow>b{font-family:var(--mono); font-size:9px; letter-spacing:.08em; color:var(--accent); font-weight:500}
+.qcell{font-family:var(--mono); font-size:9px; color:var(--dim2); white-space:nowrap}
+.qcell b{display:block; font-size:13px; color:#d2d9dc; font-weight:500; font-variant-numeric:tabular-nums}
+.risk{padding:5px 12px 12px}
+.rrow{display:grid; grid-template-columns:42px 1fr; gap:8px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,.045); font-family:var(--mono); font-size:9px; color:var(--dim)}
+.rrow:last-child{border-bottom:0}
+.rrow>b{color:var(--accent); font-weight:500}
+.rrow span{color:#9aa7ad; letter-spacing:.03em}
+.lower2{display:grid; grid-template-columns:.92fr 1.18fr; gap:10px; align-items:start}
+.drafts{padding-bottom:6px}
+.draft{padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.045)}
+.draft:last-child{border-bottom:0}
+.draft-head{display:flex; align-items:center; justify-content:space-between; gap:8px}
+.draft h3{margin:0; font-size:12.5px; font-weight:600; color:#dfe4e6; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.draft p{margin:4px 0 0; color:var(--dim); font-size:11.5px; line-height:1.65; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.draft-foot{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:6px}
+.draft .tags{font-family:var(--mono); font-size:9px; color:var(--dim2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.state{font-family:var(--mono); font-size:8px; letter-spacing:.08em; padding:3px 6px; border:1px solid var(--line); color:var(--dim); white-space:nowrap}
+.state.draft{color:var(--accent); border-color:rgba(255,106,0,.35)}
+.state.published{color:var(--green); border-color:rgba(54,211,153,.35)}
+.state.blocked{color:var(--red); border-color:rgba(255,82,82,.35)}
+.console pre{
+  height:282px; overflow:auto; margin:0; padding:10px 12px; background:#05080a;
+  font-family:var(--mono); font-size:10.5px; line-height:1.65; color:#94a5ae;
+  white-space:pre-wrap; overflow-wrap:anywhere;
+}
+footer{display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:0 clamp(14px,3vw,34px) 24px; font-family:var(--mono); font-size:9px; letter-spacing:.06em; color:var(--dim2)}
+.toast{
+  position:fixed; right:18px; bottom:18px; z-index:20; max-width:380px;
+  padding:10px 13px; background:#11181d; border:1px solid var(--line); border-left:2px solid var(--accent);
+  color:#d7dde0; font-size:12px; box-shadow:0 12px 40px rgba(0,0,0,.5);
+  opacity:0; transform:translateY(8px); transition:.2s; pointer-events:none;
+}
+.toast.show{opacity:1; transform:none}
+.toast.err{border-left-color:var(--red)}
+::-webkit-scrollbar{width:8px; height:8px}
+::-webkit-scrollbar-track{background:#080b0e}
+::-webkit-scrollbar-thumb{background:#1e2a32; border:2px solid #080b0e; border-radius:6px}
+::-webkit-scrollbar-thumb:hover{background:#2b3c47}
+@media (max-width:1180px){
+  .kpis{grid-template-columns:repeat(3,1fr)}
+  .kpi:first-child{grid-column:span 1}
+  .platforms{grid-template-columns:1fr}
+  .lower,.lower2{grid-template-columns:1fr}
+  .events{height:360px}
+}
+@media (max-width:720px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .kpi:first-child{grid-column:span 2}
+  .brand p{display:none}
+  .clock{font-size:15px}
+  .top-right{gap:8px}
+  .ev{grid-template-columns:42px 38px 1fr}
+  .ev .kind{display:none}
+  .qrow{grid-template-columns:38px repeat(2,1fr)}
+  .qrow .qcell:nth-child(4),.qrow .qcell:nth-child(5){display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important; transition:none!important}
+}
+
+/* ===== 深潜桌宠皮肤 · DeepSeek pet skin ===== */
+:root{
+  --bg:#04091a; --card:#0a1530; --card2:#071026; --line:rgba(112,143,255,.18);
+  --text:#eef4ff; --dim:#8ea6cf; --dim2:#5c739c;
+  --accent:#6f8bff; --accent2:#39c6ff; --green:#5eead4; --red:#ff7f9c;
+  --blue:#8fb3ff; --pink:#ff9ec4; --warn:#ffc46b;
+}
+body{
+  background:
+    radial-gradient(900px 520px at 10% -12%, rgba(77,107,254,.30), transparent 65%),
+    radial-gradient(780px 480px at 94% 2%, rgba(57,198,255,.13), transparent 62%),
+    radial-gradient(960px 720px at 50% 112%, rgba(34,58,150,.26), transparent 68%),
+    linear-gradient(180deg,#050a1c 0%,#04091a 46%,#030714 100%);
+  background-attachment:fixed;
+}
+body::before{
+  background-image:radial-gradient(rgba(140,170,255,.15) 1px, transparent 1px);
+  background-size:26px 26px;
+  -webkit-mask-image:radial-gradient(ellipse at 50% 0%, #000 18%, transparent 78%);
+  mask-image:radial-gradient(ellipse at 50% 0%, #000 18%, transparent 78%);
+}
+::selection{background:rgba(77,107,254,.45); color:#fff}
+.bubbles{position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:0}
+.bubbles i{
+  position:absolute; bottom:-70px; width:9px; height:9px; border-radius:50%;
+  border:1px solid rgba(150,190,255,.24);
+  background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.55), rgba(125,170,255,.16) 44%, rgba(80,120,255,0) 72%);
+  animation:rise linear infinite;
+}
+.bubbles i:nth-child(1){left:5%; width:7px; height:7px; animation-duration:20s; animation-delay:-2s}
+.bubbles i:nth-child(2){left:15%; width:12px; height:12px; animation-duration:26s; animation-delay:-11s}
+.bubbles i:nth-child(3){left:27%; width:6px; height:6px; animation-duration:17s; animation-delay:-7s}
+.bubbles i:nth-child(4){left:38%; width:10px; height:10px; animation-duration:23s; animation-delay:-15s}
+.bubbles i:nth-child(5){left:51%; width:5px; height:5px; animation-duration:15s; animation-delay:-5s}
+.bubbles i:nth-child(6){left:62%; width:13px; height:13px; animation-duration:29s; animation-delay:-19s}
+.bubbles i:nth-child(7){left:73%; width:8px; height:8px; animation-duration:21s; animation-delay:-9s}
+.bubbles i:nth-child(8){left:82%; width:6px; height:6px; animation-duration:18s; animation-delay:-13s}
+.bubbles i:nth-child(9){left:91%; width:11px; height:11px; animation-duration:25s; animation-delay:-3s}
+.bubbles i:nth-child(10){left:96%; width:5px; height:5px; animation-duration:16s; animation-delay:-8s}
+@keyframes rise{
+  0%{transform:translateY(0) translateX(0) scale(.8); opacity:0}
+  12%{opacity:.55}
+  70%{opacity:.35}
+  100%{transform:translateY(-108vh) translateX(34px) scale(1.15); opacity:0}
+}
+
+header{
+  position:sticky; top:0; z-index:6;
+  background:linear-gradient(180deg, rgba(6,13,32,.95), rgba(6,13,32,.72));
+  border-bottom:1px solid rgba(120,150,255,.16);
+  backdrop-filter:blur(16px) saturate(1.25);
+  -webkit-backdrop-filter:blur(16px) saturate(1.25);
+  padding:13px clamp(14px,3vw,34px) 12px;
+}
+.brand{gap:14px}
+.brand h1{font-size:18px; letter-spacing:.04em; color:#f3f7ff}
+.brand h1 span{color:var(--accent2)}
+.brand p{color:#8098c6; letter-spacing:.2em}
+.brand p .slash{color:var(--accent2)}
+.pet{
+  position:relative; width:58px; height:46px; flex:none; display:grid; place-items:center;
+  cursor:pointer; filter:drop-shadow(0 9px 20px rgba(77,107,254,.42)); user-select:none;
+}
+.pet svg{width:58px; height:46px; image-rendering:pixelated; animation:bob 3.6s ease-in-out infinite}
+.pet:hover svg{animation-duration:1.8s}
+.pet::after{
+  content:""; position:absolute; left:50%; bottom:-4px; width:36px; height:8px;
+  transform:translateX(-50%); border-radius:50%;
+  background:radial-gradient(ellipse, rgba(90,150,255,.4), transparent 70%); filter:blur(2px);
+}
+.pet.pop svg{animation:petpop .55s cubic-bezier(.3,1.6,.4,1)}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-3px) rotate(1.5deg)}}
+@keyframes petpop{0%{transform:scale(1)}45%{transform:scale(1.14) rotate(-3deg)}100%{transform:scale(1)}}
+.pet .blink{animation:blink 5.4s infinite; transform-box:fill-box}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.18)}}
+.pet-say{
+  position:relative; margin-left:2px; padding:6px 11px; border-radius:13px;
+  border:1px solid rgba(120,160,255,.3); background:rgba(10,22,48,.92);
+  color:#cfe0ff; font-size:11px; line-height:1.45; white-space:nowrap;
+  box-shadow:0 10px 28px rgba(0,0,0,.35), inset 0 1px 0 rgba(170,200,255,.08);
+  animation:sayfloat 5s ease-in-out infinite;
+}
+.pet-say::before{
+  content:""; position:absolute; left:-5px; top:50%; width:8px; height:8px;
+  transform:translateY(-50%) rotate(45deg); background:rgba(10,22,48,.92);
+  border-left:1px solid rgba(120,160,255,.3); border-bottom:1px solid rgba(120,160,255,.3);
+}
+@keyframes sayfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+.clock{color:#dbe7ff}
+.link{border-radius:999px; padding:6px 10px; background:rgba(10,22,48,.62)}
+.link.on{color:var(--green); border-color:rgba(94,234,212,.35)}
+.link.on i{background:var(--green); box-shadow:0 0 9px rgba(94,234,212,.85)}
+.link.err{color:var(--red); border-color:rgba(255,127,156,.4)}
+
+.card{
+  border-radius:16px;
+  background:linear-gradient(180deg, rgba(13,27,58,.84), rgba(7,16,38,.92));
+  border:1px solid rgba(110,145,255,.18);
+  box-shadow:0 18px 50px rgba(2,7,20,.48), inset 0 1px 0 rgba(160,190,255,.06);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.card::before{
+  height:1px; opacity:.55;
+  background:linear-gradient(90deg, transparent, rgba(90,130,255,.7), rgba(57,198,255,.55), transparent);
+}
+.card-top{border-bottom-color:rgba(120,150,255,.1)}
+.card-top h2{color:#cfe0ff}
+.card-top h2 span{color:#6f87b4}
+.kpi{
+  border-radius:14px;
+  background:linear-gradient(180deg, rgba(15,30,64,.9), rgba(8,17,40,.94));
+  border-color:rgba(110,145,255,.16);
+  box-shadow:inset 0 1px 0 rgba(160,190,255,.06);
+  transition:border-color .25s, box-shadow .25s;
+}
+.kpi:hover{border-color:rgba(120,160,255,.36); box-shadow:0 16px 42px rgba(10,30,90,.38)}
+.kpi::after{border-color:rgba(111,139,255,.2); border-radius:12px}
+.kpi label{color:#8299c4}
+.kpi b{color:#f2f6ff}
+.kpi b em{color:#7b91ba}
+.kpi .sub{color:#7d93bd}
+.spark i{background:rgba(111,139,255,.26); border-radius:3px 3px 0 0}
+.spark i:last-child{background:linear-gradient(180deg,var(--accent2),var(--accent)); box-shadow:0 0 10px rgba(57,198,255,.42)}
+.plat:nth-of-type(1) .ptag .code{color:var(--pink)}
+.plat:nth-of-type(2) .ptag .code{color:var(--accent2)}
+.plat:nth-of-type(3) .ptag .code{color:#a8b9ff}
+.ptag .code{text-shadow:0 0 14px currentColor}
+.ptag span+span{color:#7f96c0}
+.pill{border-radius:999px; background:rgba(9,20,44,.7); color:#8299c4}
+.pill.on{color:var(--green); border-color:rgba(94,234,212,.35)}
+.pill.on i{background:var(--green); box-shadow:0 0 9px rgba(94,234,212,.85)}
+.pill.warn{color:var(--warn); border-color:rgba(255,196,107,.35)}
+.pill.warn i{background:var(--warn)}
+.pill.err{color:var(--red); border-color:rgba(255,127,156,.38)}
+.pill.err i{background:var(--red)}
+.acct{color:#8097c1}
+.acct.on i{background:var(--green); box-shadow:0 0 7px rgba(94,234,212,.75)}
+.acct.warn i{background:var(--warn)}
+.acct.err i{background:var(--red)}
+.readouts{border-color:rgba(120,150,255,.12)}
+.readouts>div{border-right-color:rgba(120,150,255,.12)}
+.readouts label{color:#6f86b0}
+.readouts b{color:#eef4ff}
+.readouts em{color:#6f86b0}
+.quota{height:3px; border-radius:99px; overflow:hidden; background:rgba(110,145,255,.13)}
+.quota i{background:linear-gradient(90deg,var(--accent),var(--accent2)); box-shadow:0 0 8px rgba(57,198,255,.5)}
+.lastsay{color:#8299c4}
+.lastsay b{color:#cfe0ff}
+.taskline{color:#6f86b0}
+input{
+  border-radius:10px; background:rgba(4,10,26,.82); border-color:rgba(110,145,255,.18);
+  color:#e8f0ff;
+}
+input::placeholder{color:#4f6690}
+input:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(77,107,254,.18)}
+.switch{color:#8299c4}
+.switch input{
+  width:30px; height:16px; border-radius:999px;
+  background:rgba(10,22,48,.92); border-color:rgba(110,145,255,.24);
+}
+.switch input::after{width:10px; height:10px; background:#6079a8}
+.switch input:checked{background:rgba(77,107,254,.3); border-color:rgba(111,139,255,.7)}
+.switch input:checked::after{left:16px; background:linear-gradient(135deg,#9db0ff,#39c6ff); box-shadow:0 0 8px rgba(57,198,255,.7)}
+button{
+  border-radius:10px; background:rgba(14,30,64,.82); border-color:rgba(110,145,255,.2);
+  color:#dfe9ff;
+}
+button:hover{border-color:rgba(120,170,255,.5); background:rgba(22,45,92,.88); box-shadow:0 0 20px rgba(77,107,254,.2)}
+button.primary{
+  background:linear-gradient(135deg,#4d6bfe,#39c6ff); border-color:transparent; color:#04102b;
+  box-shadow:0 6px 20px rgba(77,107,254,.36);
+}
+button.primary:hover{filter:brightness(1.07); box-shadow:0 8px 28px rgba(77,107,254,.52)}
+button.linkish:hover{color:var(--accent2)}
+button.danger{color:var(--red); border-color:rgba(255,127,156,.36); background:rgba(255,127,156,.06)}
+.qr-wrap{border-radius:12px; border-color:rgba(120,150,255,.28); background:rgba(3,9,24,.8)}
+.qr-wrap p{color:#8299c4}
+.note{color:#6f86b0}
+.note b{color:var(--accent2)}
+.chip{border-radius:999px; padding:4px 10px; background:rgba(9,20,44,.5); color:#8299c4}
+.chip.active{
+  color:#e6eeff; border-color:rgba(111,139,255,.65);
+  background:rgba(77,107,254,.22); box-shadow:0 0 16px rgba(77,107,254,.25);
+}
+.tab{border-radius:999px; color:#8299c4}
+.tab.active{color:#e6eeff; border-color:rgba(111,139,255,.5); background:rgba(77,107,254,.18)}
+.meta{border-radius:999px; background:rgba(8,18,40,.7); color:#7f96c0; border-color:rgba(110,145,255,.16)}
+.meta b{color:#cfe0ff}
+.lower{align-items:stretch}
+.lower>.card{display:flex; flex-direction:column; min-width:0}
+.events{scrollbar-gutter:stable; flex:1; height:auto; min-height:446px; max-height:680px}
+@media (max-width:1180px){ .events{flex:none; height:360px; min-height:0; max-height:none} }
+.ev{border-bottom-color:rgba(120,150,255,.08)}
+.ev time{color:#647ba6}
+.ev .tag{color:#8299c4}
+.ev[data-p="bili"] .tag{color:#ff9ec4}
+.ev[data-p="dy"] .tag{color:#6ee7ff}
+.ev[data-p="qq"] .tag{color:#a8b9ff}
+.ev[data-p="desk"] .tag{color:#9fe8ff}
+.ev .kind{color:#7f96c0}
+.ev p{color:#c3d3ee}
+.ev[data-kind="say"] p{color:#8ff0d4}
+.ev[data-kind="say_dry"] p{color:#ffd08a}
+.ev[data-kind="skip"] p{color:#6c82aa}
+.ev[data-kind="drop"] p{color:#d3b98a}
+.ev[data-kind="error"] p{color:#ff9db2}
+.ev[data-kind="join"] p{color:#cfe0ff}
+.ev[data-kind="stop"] p{color:#8299c4}
+.ev[data-kind="heard"] p{color:#9db2d8}
+.empty{color:#647ba6}
+.hint{color:#647ba6}
+.persona{
+  border-radius:12px; background:rgba(3,9,24,.82); border-color:rgba(110,145,255,.14);
+  color:#a9c1e6;
+}
+.qrow{border-bottom-color:rgba(120,150,255,.08)}
+.qrow>b{color:var(--accent2)}
+.qcell{color:#6f86b0}
+.qcell b{color:#e2ebff}
+.rrow{border-bottom-color:rgba(120,150,255,.08); color:#7f96c0}
+.rrow>b{color:var(--accent2)}
+.rrow span{color:#9db2d8}
+.draft{border-bottom-color:rgba(120,150,255,.08); transition:background .2s}
+.draft:hover{background:rgba(77,107,254,.05)}
+.draft h3{color:#e6eeff}
+.draft p{color:#8299c4}
+.draft .tags{color:#6f86b0}
+.state{border-radius:999px; color:#8299c4; border-color:rgba(110,145,255,.18)}
+.state.draft{color:var(--accent2); border-color:rgba(57,198,255,.35); background:rgba(57,198,255,.06)}
+.state.published{color:var(--green); border-color:rgba(94,234,212,.35); background:rgba(94,234,212,.06)}
+.state.blocked{color:var(--red); border-color:rgba(255,127,156,.38); background:rgba(255,127,156,.06)}
+.console pre{
+  background:#020817; color:#9eb9e6; border-radius:0 0 16px 16px;
+  text-shadow:0 0 14px rgba(90,140,255,.12);
+}
+footer{color:#5f76a0}
+.toast{
+  border-radius:14px; background:rgba(9,20,46,.97);
+  border:1px solid rgba(110,145,255,.26); border-left:3px solid var(--accent);
+  color:#dbe7ff;
+  box-shadow:0 18px 60px rgba(0,0,0,.55), 0 0 32px rgba(77,107,254,.16);
+  backdrop-filter:blur(10px);
+}
+.toast.err{border-left-color:var(--red)}
+::-webkit-scrollbar-track{background:#040a18}
+::-webkit-scrollbar-thumb{background:#1b2c58; border-color:#040a18; border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:#2b4484}
+@media (max-width:960px){ .pet-say{display:none} }
+@media (max-width:720px){
+  header{padding-top:10px}
+  .pet{width:48px; height:38px}
+  .pet svg{width:48px; height:38px}
+  .brand{gap:10px}
+  .brand h1{font-size:16px}
+}
+</style>
+</head>
+<body>
+<div class="bubbles" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<header>
+  <div class="brand">
+    <div class="pet" id="pet" role="button" tabindex="0" title="戳一下大肥鱼" aria-label="大肥鱼桌宠">
+      <svg viewBox="0 0 40 32" aria-hidden="true" shape-rendering="crispEdges">
+        <g fill="#8fe9ff">
+          <rect x="19" y="6" width="2" height="4"/>
+          <rect x="16" y="3" width="2" height="2"/>
+          <rect x="22" y="2" width="2" height="2"/>
+          <rect x="19" y="1" width="2" height="2"/>
+        </g>
+        <g fill="#3450d8">
+          <rect x="2" y="11" width="6" height="3"/>
+          <rect x="4" y="14" width="7" height="3"/>
+          <rect x="7" y="17" width="6" height="4"/>
+          <rect x="4" y="21" width="7" height="3"/>
+          <rect x="2" y="24" width="6" height="3"/>
+        </g>
+        <g fill="#4d6bfe">
+          <rect x="14" y="9" width="14" height="2"/>
+          <rect x="12" y="11" width="19" height="2"/>
+          <rect x="10" y="13" width="24" height="9"/>
+          <rect x="12" y="22" width="20" height="2"/>
+          <rect x="15" y="24" width="14" height="2"/>
+        </g>
+        <g fill="#7c96ff">
+          <rect x="15" y="10" width="11" height="2"/>
+          <rect x="13" y="12" width="16" height="2"/>
+        </g>
+        <g fill="#eaf1ff">
+          <rect x="16" y="19" width="16" height="2"/>
+          <rect x="18" y="21" width="12" height="2"/>
+          <rect x="20" y="23" width="8" height="1"/>
+        </g>
+        <g fill="#3450d8">
+          <rect x="16" y="23" width="6" height="2"/>
+          <rect x="14" y="25" width="5" height="2"/>
+        </g>
+        <rect x="23" y="17" width="3" height="2" fill="#ff9ec4" opacity=".85"/>
+        <g class="blink">
+          <rect x="29" y="13" width="3" height="4" fill="#06122e"/>
+          <rect x="29" y="13" width="1" height="1" fill="#fff"/>
+        </g>
+        <rect x="31" y="18" width="2" height="1" fill="#27408f"/>
+        <g fill="#ff9ec4">
+          <rect x="25" y="6" width="4" height="3"/>
+          <rect x="31" y="6" width="4" height="3"/>
+          <rect x="29" y="7" width="2" height="3"/>
+        </g>
+        <g fill="#ffc2da">
+          <rect x="26" y="6" width="1" height="1"/>
+          <rect x="32" y="6" width="1" height="1"/>
+        </g>
+      </svg>
+    </div>
+    <div>
+      <h1>大肥鱼 <span>·</span> 深潜中控</h1>
+      <p>DEEP-SEA CONTROL DECK <span class="slash">/</span> DESK PET OPS</p>
+    </div>
+    <div class="pet-say" id="pet-say">深海待机中，戳我一下？</div>
+  </div>
+  <div class="top-right">
+    <div class="clock" id="clock">--:--:--</div>
+    <div class="link" id="link"><i></i><span>LINK</span></div>
+  </div>
+</header>
+
+<main>
+  <section class="kpis">
+    <article class="kpi">
+      <label>今日 Tokens</label>
+      <b id="k-tokens">0</b>
+      <div class="sub" id="k-token-sub">IN 0 / OUT 0 / CACHE 0</div>
+      <div class="spark" id="spark"></div>
+    </article>
+    <article class="kpi">
+      <label>估算成本</label>
+      <b id="k-cost">¥0.0000</b>
+      <div class="sub">按缓存命中价估算</div>
+    </article>
+    <article class="kpi">
+      <label>模型调用</label>
+      <b id="k-calls">0</b>
+      <div class="sub" id="k-call-sub">错误 0 · 0.0%</div>
+    </article>
+    <article class="kpi">
+      <label>平均延迟</label>
+      <b><span id="k-latency">0</span><em>ms</em></b>
+      <div class="sub">今日全部调用</div>
+    </article>
+    <article class="kpi">
+      <label>今日发声</label>
+      <b id="k-say">0</b>
+      <div class="sub" id="k-heard">听到 0 条</div>
+    </article>
+  </section>
+
+  <section class="platforms">
+    <article class="card plat">
+      <div class="card-top">
+        <div class="ptag"><span class="code">BILI</span><span>直播间</span></div>
+        <div class="pill" id="st-bili"><i></i>待机</div>
+      </div>
+      <div class="acct" id="acct-bili"><i></i><span id="acct-text-bili">未登录</span></div>
+      <div class="readouts">
+        <div><label>本小时</label><b id="hour-bili">0</b><em id="quota-max-bili">/ 12</em></div>
+        <div><label>今日听到</label><b id="heard-bili">0</b></div>
+        <div><label>今日说出</label><b id="said-bili">0</b></div>
+      </div>
+      <div class="quota"><i id="quota-bili"></i></div>
+      <div class="lastsay" id="last-bili">还没有说过话</div>
+      <div class="taskline" id="task-bili">待机</div>
+      <div class="controls">
+        <div class="field"><label for="room-bili">房间号</label><input id="room-bili" placeholder="留空自动挑热门" inputmode="numeric"></div>
+        <div class="field"><label for="min-bili">分钟</label><input id="min-bili" type="number" value="10" min="1" max="180"></div>
+        <label class="switch"><input type="checkbox" id="dry-bili" checked><span>仅观察，不真发</span></label>
+        <div class="btns">
+          <button class="primary" data-run="bili" id="run-bili">启动</button>
+          <button class="ghost" data-stop="bili" id="stop-bili" disabled>停止</button>
+          <button class="ghost" data-login="bili" id="login-bili">扫码登录</button>
+        </div>
+      </div>
+      <div class="qr-wrap" id="qr-wrap" hidden>
+        <img id="qr-img" alt="B站登录二维码">
+        <div>
+          <p>用 B站 App 扫码<br>成功后 cookie 自动写回 .env</p>
+          <button class="ghost small" data-stop="login_bili" id="stop-login-bili">取消登录</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="card plat">
+      <div class="card-top">
+        <div class="ptag"><span class="code">DOUYIN</span><span>直播间</span></div>
+        <div class="pill" id="st-dy"><i></i>待机</div>
+      </div>
+      <div class="acct" id="acct-dy"><i></i><span id="acct-text-dy">未登录</span></div>
+      <div class="readouts">
+        <div><label>本小时</label><b id="hour-dy">0</b><em id="quota-max-dy">/ 8</em></div>
+        <div><label>今日听到</label><b id="heard-dy">0</b></div>
+        <div><label>今日说出</label><b id="said-dy">0</b></div>
+      </div>
+      <div class="quota"><i id="quota-dy"></i></div>
+      <div class="lastsay" id="last-dy">还没有说过话</div>
+      <div class="taskline" id="task-dy">待机</div>
+      <div class="controls">
+        <div class="field"><label for="room-dy">直播间 web_rid</label><input id="room-dy" placeholder="必填，如 77903695754" inputmode="numeric"></div>
+        <div class="field"><label for="min-dy">分钟</label><input id="min-dy" type="number" value="10" min="1" max="180"></div>
+        <label class="switch"><input type="checkbox" id="dry-dy" checked><span>仅观察，不真发</span></label>
+        <div class="btns">
+          <button class="primary" data-run="dy" id="run-dy">启动</button>
+          <button class="ghost" data-stop="dy" id="stop-dy" disabled>停止</button>
+          <button class="ghost" data-login="dy" id="login-dy">扫码登录</button>
+          <button class="ghost" data-check="dy" id="check-dy">检测登录</button>
+        </div>
+      </div>
+      <div class="note">浏览器自动化实验通道。无头会被降级为游客，建议只用小号；默认仅观察。</div>
+    </article>
+
+    <article class="card plat">
+      <div class="card-top">
+        <div class="ptag"><span class="code">QQ</span><span>私聊</span></div>
+        <div class="pill" id="st-qq"><i></i>待机</div>
+      </div>
+      <div class="acct" id="acct-qq"><i></i><span id="acct-text-qq">NapCat 未运行</span></div>
+      <div class="readouts">
+        <div><label>今日收到</label><b id="heard-qq">0</b></div>
+        <div><label>今日回复</label><b id="said-qq">0</b></div>
+        <div><label>表情触发</label><b id="sticker-qq">—</b></div>
+      </div>
+      <div class="lastsay" id="last-qq">还没有回复过</div>
+      <div class="taskline" id="task-qq">待机</div>
+      <div class="controls">
+        <label class="switch"><input type="checkbox" id="dry-qq" checked><span>仅观察，不真的回复</span></label>
+        <div class="btns">
+          <button class="primary" data-run="qq" id="run-qq">启动</button>
+          <button class="ghost" data-stop="qq" id="stop-qq" disabled>停止</button>
+          <button class="ghost danger" data-takeover="qq" id="takeover-qq" hidden>接管外部</button>
+        </div>
+      </div>
+      <div class="note" id="note-qq">NapCat 通过反向 WS 连接。外部启动的 agent 没有面板埋点，接管后会重启并开始记账。</div>
+    </article>
+  </section>
+
+  <section class="lower">
+    <article class="card">
+      <div class="card-top">
+        <h2>行为流 <span>HEARD / SKIP / SAY</span></h2>
+        <div class="chips" id="filters">
+          <button class="chip active" data-filter="all">全部</button>
+          <button class="chip" data-filter="bili">BILI</button>
+          <button class="chip" data-filter="dy">DY</button>
+          <button class="chip" data-filter="qq">QQ</button>
+          <button class="chip" data-filter="desk">DESK</button>
+        </div>
+      </div>
+      <div class="events" id="events"><div class="empty">等待事件流…</div></div>
+    </article>
+
+    <aside class="side">
+      <article class="card">
+        <div class="card-top">
+          <h2>人设 <span>PERSONA</span></h2>
+          <div class="tabs" id="persona-tabs">
+            <button class="tab active" data-persona="qq">QQ</button>
+            <button class="tab" data-persona="bili">BILI</button>
+            <button class="tab" data-persona="dy">DY</button>
+          </div>
+        </div>
+        <div class="meta-row" id="persona-meta"></div>
+        <pre class="persona" id="persona-text"></pre>
+      </article>
+      <article class="card">
+        <div class="card-top">
+          <h2>行为质量 <span>PROXY</span></h2>
+          <span class="hint">今日 · 非智能评分</span>
+        </div>
+        <div class="quality" id="quality"></div>
+      </article>
+      <article class="card">
+        <div class="card-top">
+          <h2>风控参数 <span>READ ONLY</span></h2>
+          <span class="hint">改脚本顶部后重启任务</span>
+        </div>
+        <div class="risk" id="risk"></div>
+      </article>
+    </aside>
+  </section>
+
+  <section class="lower2">
+    <article class="card drafts">
+      <div class="card-top">
+        <h2>草稿 <span>DRAFTS</span></h2>
+        <button class="ghost small" id="gen">生成 2 条</button>
+      </div>
+      <div id="drafts"><div class="empty">还没有草稿</div></div>
+    </article>
+    <article class="card console">
+      <div class="card-top">
+        <h2>运行日志 <span>STDOUT</span></h2>
+        <div class="tabs" id="log-tabs">
+          <button class="tab active" data-logkey="bili">B站</button>
+          <button class="tab" data-logkey="dy">抖音</button>
+          <button class="tab" data-logkey="qq">QQ</button>
+          <button class="tab" data-logkey="login_bili">B站登录</button>
+          <button class="tab" data-logkey="login_dy">抖音登录</button>
+          <button class="tab" data-logkey="check_dy">抖音检测</button>
+          <button class="tab" data-logkey="desk">运营台</button>
+        </div>
+      </div>
+      <pre id="log">暂无日志。启动任务后这里会实时滚动。</pre>
+    </article>
+  </section>
+</main>
+
+<footer>
+  <span>LOCAL ONLY · 127.0.0.1 · 不对外暴露</span>
+  <span>数据源 metrics.db / bili_play.db / dy_play.db · 抖音为实验通道</span>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+const $ = (id) => document.getElementById(id);
+const state = { data: null, filter: "all", persona: "qq", logKey: "bili" };
+const logs = {};
+const logSeq = {};
+
+const KIND = {
+  heard: "听到", skip: "略过", drop: "丢弃", say: "说出", say_dry: "预演",
+  error: "异常", join: "进入", stop: "收工", limit: "限速",
+  connect: "连接", disconnect: "断开", draft: "草稿", start: "启动"
+};
+const PLAT = { bili: "BILI", dy: "DY", qq: "QQ", desk: "DESK" };
+const PET_LINES = [
+  "深海待机中～ 戳我一下？",
+  "今天也要好好说话呀。",
+  "鱼鳍趴在键盘上，听你安排。",
+  "直播间的风浪，我先替你听着。",
+  "夸我一句，我就多冒一个泡。"
+];
+let petUntil = 0;
+
+function petStatus(d) {
+  const running = ["bili", "dy", "qq"].filter(
+    (k) => d.platforms[k] && d.platforms[k].runner.running);
+  if (running.length) return "正在陪 " + running.map((k) => PLAT[k]).join(" + ") + " 干活～";
+  if (d.platforms.qq && d.platforms.qq.external) return "QQ 那边有人替我值班。";
+  if (d.kpi.errors) return "今天有 " + fmtInt(d.kpi.errors) + " 次调用摔了一跤…";
+  if (d.kpi.today_say) return "今天已经开口 " + fmtInt(d.kpi.today_say) + " 次啦。";
+  return "深海待机中，等你按下启动。";
+}
+
+function updatePet(d) {
+  const el = $("pet-say");
+  if (el && Date.now() >= petUntil) el.textContent = petStatus(d);
+}
+
+function petBounce() {
+  const pet = $("pet");
+  if (!pet) return;
+  pet.classList.remove("pop");
+  void pet.offsetWidth;
+  pet.classList.add("pop");
+  petUntil = Date.now() + 6000;
+  $("pet-say").textContent = PET_LINES[Math.floor(Math.random() * PET_LINES.length)];
+  clearTimeout(pet.timer);
+  pet.timer = setTimeout(() => {
+    petUntil = 0;
+    if (state.data) updatePet(state.data);
+  }, 6000);
+}
+
+function fmtInt(n) { return Number(n || 0).toLocaleString("zh-CN"); }
+function fmtCompact(n) {
+  n = Number(n || 0);
+  if (n >= 1e6) return (n / 1e6).toFixed(2) + "M";
+  if (n >= 1e3) return (n / 1e3).toFixed(1) + "k";
+  return String(Math.round(n));
+}
+function pct(x) { return (x === null || x === undefined) ? "—" : (x * 100).toFixed(0) + "%"; }
+function money(x) { return "¥" + (Number(x) || 0).toFixed(4); }
+function hhmmss(ts) {
+  const d = new Date(ts * 1000);
+  return d.toTimeString().slice(0, 8);
+}
+function shortDate(ts) {
+  if (!ts) return "";
+  const d = new Date(ts * 1000);
+  return d.toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" });
+}
+
+let toastTimer = 0;
+function toast(msg, isErr) {
+  const el = $("toast");
+  el.textContent = msg;
+  el.className = "toast show" + (isErr ? " err" : "");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = "toast"; }, 4200);
+}
+
+function setPill(el, text, cls) {
+  el.textContent = "";
+  const dot = document.createElement("i");
+  el.appendChild(dot);
+  el.appendChild(document.createTextNode(text));
+  el.className = "pill " + (cls || "");
+}
+
+function setAcct(el, text, cls) {
+  el.className = "acct " + (cls || "");
+  const span = el.querySelector("span");
+  if (span) span.textContent = text;
+}
+
+function errorText(j, status) {
+  if (j && Array.isArray(j.detail)) return j.detail.map((x) => x.msg || String(x)).join("; ");
+  if (j && j.detail) return String(j.detail);
+  return "HTTP " + status;
+}
+
+async function act(url, body, okMsg) {
+  try {
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body || {})
+    });
+    let j = {};
+    try { j = await r.json(); } catch (e) { j = {}; }
+    if (!r.ok) throw new Error(errorText(j, r.status));
+    toast(okMsg || "完成");
+    tick();
+    return j;
+  } catch (e) {
+    toast(e.message || String(e), true);
+    return null;
+  }
+}
+
+function renderKpi(k, series) {
+  $("k-tokens").textContent = fmtCompact(k.tokens);
+  $("k-token-sub").textContent =
+    "IN " + fmtCompact(k.prompt) + " / OUT " + fmtCompact(k.completion) +
+    " / CACHE " + fmtCompact(k.cache_hit);
+  $("k-cost").textContent = money(k.cost);
+  $("k-calls").textContent = fmtInt(k.calls);
+  $("k-call-sub").textContent =
+    "错误 " + fmtInt(k.errors) + " · " + (k.error_rate * 100).toFixed(1) + "%";
+  $("k-latency").textContent = fmtInt(k.latency);
+  $("k-say").textContent = fmtInt(k.today_say);
+  $("k-heard").textContent = "听到 " + fmtInt(k.today_heard) + " 条";
+
+  const spark = $("spark");
+  spark.textContent = "";
+  const max = Math.max(1, ...series.map((s) => s.tokens));
+  series.forEach((s) => {
+    const bar = document.createElement("i");
+    bar.style.height = Math.max(2, Math.round((s.tokens / max) * 27)) + "px";
+    bar.title = s.label + ": " + fmtInt(s.tokens) + " tokens";
+    spark.appendChild(bar);
+  });
+}
+
+function renderBili(p) {
+  const r = p.runner, acc = p.account;
+  const running = !!r.running;
+  let pillText = "待机", pillCls = "";
+  if (running) { pillText = "运行中"; pillCls = "on"; }
+  else if (!acc.logged_in) { pillText = "未登录"; pillCls = "err"; }
+  else if (r.ended && r.exit_code !== 0) { pillText = "已退出"; pillCls = "warn"; }
+  setPill($("st-bili"), pillText, pillCls);
+
+  if (acc.logged_in && acc.verified) {
+    setAcct($("acct-bili"),
+      (acc.uname || "已登录") + " · Lv" + (acc.level == null ? "?" : acc.level) +
+      " · UID " + (acc.uid || "—"), "on");
+  } else if (acc.logged_in) {
+    setAcct($("acct-bili"), "已配置登录态 · " + (acc.reason || "未联网校验"), "warn");
+  } else {
+    setAcct($("acct-bili"), "未登录" + (acc.reason ? " · " + acc.reason : ""), "err");
+  }
+
+  $("hour-bili").textContent = fmtInt(p.hour_said);
+  $("quota-max-bili").textContent = "/ " + (p.quota || "—");
+  $("quota-bili").style.width = Math.min(100, p.quota ? (p.hour_said / p.quota) * 100 : 0) + "%";
+  $("heard-bili").textContent = fmtInt(p.today_heard);
+  $("said-bili").textContent = fmtInt(p.today_said);
+  $("last-bili").textContent = p.last ? "「" + p.last.text + "」" : "还没有说过话";
+  $("task-bili").textContent = (p.task || "待机") + (r.headline ? " · " + r.headline : "");
+
+  $("run-bili").disabled = running;
+  $("stop-bili").disabled = !running;
+  $("login-bili").disabled = running || state.data.login.bili_runner.running;
+
+  const qr = state.data.login;
+  const wrap = $("qr-wrap");
+  if (qr.bili_qr) {
+    wrap.hidden = false;
+    const src = "/api/qr/bili?v=" + qr.bili_qr;
+    if ($("qr-img").getAttribute("src") !== src) $("qr-img").src = src;
+    $("stop-login-bili").disabled = !qr.bili_runner.running;
+  } else {
+    wrap.hidden = true;
+  }
+}
+
+function renderDy(p) {
+  const r = p.runner, acc = p.account;
+  const running = !!r.running;
+  let pillText = "待机", pillCls = "";
+  if (running) { pillText = "运行中"; pillCls = "on"; }
+  else if (!acc.logged_in) { pillText = "未登录"; pillCls = "err"; }
+  else if (r.ended && r.exit_code !== 0) { pillText = "已退出"; pillCls = "warn"; }
+  else if (acc.logged_in) { pillText = "待命"; pillCls = "on"; }
+  setPill($("st-dy"), pillText, pillCls);
+
+  if (acc.logged_in) {
+    setAcct($("acct-dy"),
+      "登录态有效 · " + (acc.method === "cookies" ? "Cookie 校验" : "state 文件") +
+      (acc.ts ? " · " + shortDate(acc.ts) : ""), "on");
+  } else {
+    setAcct($("acct-dy"), "未登录 · 需要扫码", "err");
+  }
+
+  $("hour-dy").textContent = fmtInt(p.hour_said);
+  $("quota-max-dy").textContent = "/ " + (p.quota || "—");
+  $("quota-dy").style.width = Math.min(100, p.quota ? (p.hour_said / p.quota) * 100 : 0) + "%";
+  $("heard-dy").textContent = fmtInt(p.today_heard);
+  $("said-dy").textContent = fmtInt(p.today_said);
+  $("last-dy").textContent = p.last ? "「" + p.last.text + "」" : "还没有说过话";
+  $("task-dy").textContent = (p.task || "待机") + (r.headline ? " · " + r.headline : "");
+
+  $("run-dy").disabled = running;
+  $("stop-dy").disabled = !running;
+  const busy = running || state.data.login.dy_runner.running || state.data.login.check_dy_runner.running;
+  $("login-dy").disabled = busy;
+  $("check-dy").disabled = busy;
+}
+
+function renderQq(p) {
+  const r = p.runner;
+  const q = state.data.quality.qq || {};
+  let pillText = "待机", pillCls = "";
+  if (p.external) { pillText = "外部运行"; pillCls = "warn"; }
+  else if (r.running && p.napcat_connected) { pillText = "在线"; pillCls = "on"; }
+  else if (r.running) { pillText = "连接中"; pillCls = "warn"; }
+  else if (r.ended && r.exit_code !== 0) { pillText = "已退出"; pillCls = "err"; }
+  setPill($("st-qq"), pillText, pillCls);
+
+  if (p.external) {
+    setAcct($("acct-qq"), "NapCat 端口 " + p.port + " · 外部进程 pid=" + (p.external_pid || "?"), "warn");
+  } else if (r.running) {
+    setAcct($("acct-qq"), "NapCat 端口 " + p.port + " · " +
+      (p.napcat_connected ? "已连接" : "等待连接"), p.napcat_connected ? "on" : "warn");
+  } else {
+    setAcct($("acct-qq"), "NapCat 端口 " + p.port + " · 未运行", "err");
+  }
+
+  $("heard-qq").textContent = fmtInt(p.today_heard);
+  $("said-qq").textContent = fmtInt(p.today_said);
+  $("sticker-qq").textContent = pct(q.sticker_rate);
+  $("last-qq").textContent = p.last ? "「" + p.last.text + "」" : "还没有回复过";
+  $("task-qq").textContent = p.task || "待机";
+
+  $("run-qq").disabled = r.running || p.external;
+  $("stop-qq").disabled = !r.running;
+  $("takeover-qq").hidden = !p.external;
+  $("note-qq").textContent = p.external
+    ? "检测到外部 QQ agent。旧进程没有面板埋点；点击「接管外部」会终止它并由面板重启。"
+    : "NapCat 通过反向 WS 连接。启动后这里会显示连接状态与今日收发。";
+}
+
+function renderEvents(events) {
+  const box = $("events");
+  const keepTop = box.scrollTop;
+  box.textContent = "";
+  const rows = events.filter((e) => state.filter === "all" || e.platform === state.filter);
+  if (!rows.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "没有符合筛选条件的事件";
+    box.appendChild(empty);
+    return;
+  }
+  rows.forEach((e) => {
+    const row = document.createElement("div");
+    row.className = "ev";
+    row.dataset.p = e.platform || "desk";
+    row.dataset.kind = e.kind || "";
+
+    const time = document.createElement("time");
+    time.textContent = hhmmss(e.ts);
+
+    const tag = document.createElement("span");
+    tag.className = "tag";
+    tag.textContent = PLAT[e.platform] || (e.platform || "").toUpperCase();
+
+    const kind = document.createElement("span");
+    kind.className = "kind";
+    kind.textContent = KIND[e.kind] || e.kind || "事件";
+
+    const text = document.createElement("p");
+    let detail = e.detail || "";
+    if (e.meta && e.meta.code !== undefined && e.meta.code !== 0) {
+      detail += "  (code " + e.meta.code + ")";
+    }
+    text.textContent = detail;
+
+    row.append(time, tag, kind, text);
+    box.appendChild(row);
+  });
+  box.scrollTop = keepTop;
+}
+
+function renderPersona(persona) {
+  const p = persona[state.persona];
+  if (!p) return;
+  const pre = $("persona-text");
+  const keepTop = pre.scrollTop;
+  const meta = $("persona-meta");
+  meta.textContent = "";
+  [["MODEL", p.model], ["TEMP", p.temperature], ["CONTEXT", p.context + " 条/轮"]].forEach((pair) => {
+    const el = document.createElement("span");
+    el.className = "meta";
+    el.append(document.createTextNode(pair[0] + " "));
+    const b = document.createElement("b");
+    b.textContent = pair[1];
+    el.appendChild(b);
+    meta.appendChild(el);
+  });
+  $("persona-text").textContent = p.text || "（没有读到人设）";
+  $("persona-text").scrollTop = keepTop;
+}
+
+function qcell(label, value) {
+  const el = document.createElement("div");
+  el.className = "qcell";
+  el.textContent = label;
+  const b = document.createElement("b");
+  b.textContent = value;
+  el.appendChild(b);
+  return el;
+}
+
+function renderQuality(quality) {
+  const box = $("quality");
+  box.textContent = "";
+  [["bili", "BILI"], ["dy", "DY"], ["qq", "QQ"]].forEach(([key, name]) => {
+    const q = quality[key] || {};
+    const row = document.createElement("div");
+    row.className = "qrow";
+    const n = document.createElement("b");
+    n.textContent = name;
+    row.appendChild(n);
+    row.appendChild(qcell(key === "qq" ? "表情" : "接话", pct(q.speak_rate)));
+    row.appendChild(qcell("重复", pct(q.dup)));
+    row.appendChild(qcell("字数", q.samples ? q.avg_len.toFixed(1) : "—"));
+    row.appendChild(qcell("JSON 失败", q.json_fail == null ? "—" : String(q.json_fail)));
+    box.appendChild(row);
+  });
+  const hint = document.createElement("div");
+  hint.className = "empty";
+  hint.style.padding = "8px 0 0";
+  hint.textContent = "接话率 = 说出 / (说出 + 略过)；QQ 显示表情触发率。新埋点后开始累计。";
+  box.appendChild(hint);
+}
+
+function renderRisk(risk) {
+  const box = $("risk");
+  box.textContent = "";
+  [["BILI", risk.bili, "≥" + risk.bili.min_gap + "s · " + risk.bili.max_per_hour + "/h · " +
+    risk.bili.max_per_run + "/次 · 至少 " + risk.bili.min_new + " 条新弹幕"],
+   ["DY", risk.dy, "≥" + risk.dy.min_gap + "s · " + risk.dy.max_per_hour + "/h · " +
+    risk.dy.max_per_run + "/次 · 至少 " + risk.dy.min_new + " 条新弹幕"],
+   ["QQ", null, "私聊全回 · 表情冷却 30s · 非官方协议，仅小号"]].forEach(([name, r, text]) => {
+    const row = document.createElement("div");
+    row.className = "rrow";
+    const b = document.createElement("b");
+    b.textContent = name;
+    const s = document.createElement("span");
+    s.textContent = text;
+    row.append(b, s);
+    box.appendChild(row);
+  });
+}
+
+function statusClass(status) {
+  if (status === "published") return "published";
+  if (status && status.startsWith("blocked")) return "blocked";
+  return "draft";
+}
+function statusLabel(status) {
+  if (status === "published") return "已发布";
+  if (status && status.startsWith("blocked")) return "被拦 " + status.split(":")[1];
+  return "待审";
+}
+
+function renderDrafts(drafts) {
+  const box = $("drafts");
+  box.textContent = "";
+  if (!drafts || !drafts.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "还没有草稿。点右上角生成。";
+    box.appendChild(empty);
+    return;
+  }
+  drafts.forEach((d) => {
+    const el = document.createElement("div");
+    el.className = "draft";
+    const head = document.createElement("div");
+    head.className = "draft-head";
+    const h = document.createElement("h3");
+    h.textContent = d.title || ("草稿 #" + d.id);
+    const badge = document.createElement("span");
+    badge.className = "state " + statusClass(d.status);
+    badge.textContent = statusLabel(d.status);
+    head.append(h, badge);
+
+    const body = document.createElement("p");
+    body.textContent = d.body || "";
+
+    const foot = document.createElement("div");
+    foot.className = "draft-foot";
+    const tags = document.createElement("span");
+    tags.className = "tags";
+    tags.textContent = d.tags || ("#" + d.id);
+    foot.appendChild(tags);
+
+    if (d.status !== "published") {
+      const btn = document.createElement("button");
+      btn.className = "ghost small";
+      btn.textContent = "发布";
+      btn.addEventListener("click", () => {
+        if (!confirm("确定发布草稿 #" + d.id + "？\n\n" + (d.title || "") +
+                     "\n\n会立即出现在 B站 动态，且不可撤回。")) return;
+        act("/api/drafts/" + d.id + "/publish", { confirm: true }, "发布请求已提交，看日志确认结果");
+      });
+      foot.appendChild(btn);
+    }
+    el.append(head, body, foot);
+    box.appendChild(el);
+  });
+}
+
+function renderLog() {
+  const el = $("log");
+  el.textContent = logs[state.logKey] || "暂无日志。启动任务后这里会实时滚动。";
+  el.scrollTop = el.scrollHeight;
+}
+
+async function pullLogs(key) {
+  try {
+    const since = logSeq[key] || 0;
+    const r = await fetch("/api/logs?key=" + encodeURIComponent(key) + "&since=" + since,
+                          { cache: "no-store" });
+    if (!r.ok) return;
+    const j = await r.json();
+    if (j.lines && j.lines.length) {
+      const text = j.lines.map((l) => hhmmss(l.ts) + "  " + l.text).join("\n") + "\n";
+      logs[key] = (logs[key] || "") + text;
+      if (logs[key].length > 160000) logs[key] = logs[key].slice(-120000);
+      logSeq[key] = j.seq;
+      if (key === state.logKey) renderLog();
+    }
+  } catch (e) { /* 网络抖动时下一轮再取 */ }
+}
+
+function setLogTab(key) {
+  state.logKey = key;
+  document.querySelectorAll("#log-tabs .tab").forEach((t) => {
+    t.classList.toggle("active", t.dataset.logkey === key);
+  });
+  renderLog();
+  pullLogs(key);
+}
+
+function render(data) {
+  state.data = data;
+  renderKpi(data.kpi, data.series);
+  renderBili(data.platforms.bili);
+  renderDy(data.platforms.dy);
+  renderQq(data.platforms.qq);
+  renderEvents(data.events);
+  renderPersona(data.persona);
+  renderQuality(data.quality);
+  renderRisk(data.risk);
+  renderDrafts(data.drafts);
+  $("gen").disabled = data.desk_runner.running;
+  $("gen").textContent = data.desk_runner.running ? "生成中…" : "生成 2 条";
+  updatePet(data);
+}
+
+async function tick() {
+  try {
+    const r = await fetch("/api/state", { cache: "no-store" });
+    if (!r.ok) throw new Error("state " + r.status);
+    const data = await r.json();
+    render(data);
+    $("link").className = "link on";
+  } catch (e) {
+    $("link").className = "link err";
+  }
+}
+
+function clock() {
+  $("clock").textContent = new Date().toLocaleTimeString("zh-CN", { hour12: false });
+}
+
+document.addEventListener("click", async (ev) => {
+  const btn = ev.target.closest("button");
+  if (!btn) return;
+
+  if (btn.dataset.filter) {
+    state.filter = btn.dataset.filter;
+    document.querySelectorAll("#filters .chip").forEach((c) =>
+      c.classList.toggle("active", c === btn));
+    if (state.data) renderEvents(state.data.events);
+    return;
+  }
+
+  if (btn.dataset.persona) {
+    state.persona = btn.dataset.persona;
+    document.querySelectorAll("#persona-tabs .tab").forEach((t) =>
+      t.classList.toggle("active", t === btn));
+    if (state.data) renderPersona(state.data.persona);
+    return;
+  }
+
+  if (btn.dataset.logkey) {
+    setLogTab(btn.dataset.logkey);
+    return;
+  }
+
+  if (btn.dataset.run === "bili") {
+    const dry = $("dry-bili").checked;
+    const payload = {
+      room: $("room-bili").value.trim(),
+      minutes: Number($("min-bili").value) || 10,
+      dry_run: dry,
+      confirm: false
+    };
+    if (!dry) {
+      if (!confirm("将用真实 B站 账号在直播间发言。\n\n风控：≥90 秒一条、每小时 12 条。\n确定开始？")) return;
+      payload.confirm = true;
+    }
+    await act("/api/run/bili", payload, "B站任务已启动");
+    return;
+  }
+
+  if (btn.dataset.run === "dy") {
+    const room = $("room-dy").value.trim();
+    if (!room) { toast("先填抖音直播间 web_rid", true); return; }
+    const dryBox = $("dry-dy");
+    const isDry = dryBox.checked;
+    const payload = {
+      room: room,
+      minutes: Number($("min-dy").value) || 10,
+      dry_run: isDry,
+      confirm: false
+    };
+    if (!isDry) {
+      if (!confirm("抖音是浏览器自动化实验通道，真发有封号风险。\n\n将用真实账号发弹幕，确定开始？")) return;
+      payload.confirm = true;
+    }
+    await act("/api/run/dy", payload, "抖音任务已启动");
+    return;
+  }
+
+  if (btn.dataset.run === "qq") {
+    const dry = $("dry-qq").checked;
+    const payload = { dry_run: dry, confirm: false };
+    if (!dry) {
+      if (!confirm("QQ agent 会真实回复私聊消息。\n\n确定关闭「仅观察」并启动？")) return;
+      payload.confirm = true;
+    }
+    await act("/api/run/qq", payload, "QQ 任务已启动");
+    return;
+  }
+
+  if (btn.dataset.stop) {
+    await act("/api/stop/" + btn.dataset.stop, {}, "停止信号已发送");
+    return;
+  }
+
+  if (btn.dataset.login === "bili") {
+    await act("/api/login/bili", {}, "B站登录已启动，二维码稍后出现");
+    setLogTab("login_bili");
+    return;
+  }
+
+  if (btn.dataset.login === "dy") {
+    if (!confirm("会打开一个真实 Chrome 窗口，请用抖音 App 扫码。\n继续？")) return;
+    await act("/api/login/dy", {}, "抖音登录已启动");
+    setLogTab("login_dy");
+    return;
+  }
+
+  if (btn.dataset.check === "dy") {
+    await act("/api/check/dy", {}, "正在检测抖音登录态");
+    setLogTab("check_dy");
+    return;
+  }
+
+  if (btn.dataset.takeover === "qq") {
+    if (!confirm("会强制终止端口 3001 上的外部 QQ agent，然后由面板重启。\n\n外部进程内存里的对话上下文会丢失。确定接管？")) return;
+    await act("/api/qq/takeover", { confirm: true }, "已接管 QQ，正在重启");
+    setLogTab("qq");
+    return;
+  }
+});
+
+$("gen").addEventListener("click", () => {
+  act("/api/drafts/gen", { n: 2 }, "开始生成草稿，日志里看进度");
+  setLogTab("desk");
+});
+
+$("pet").addEventListener("click", petBounce);
+$("pet").addEventListener("keydown", (ev) => {
+  if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); petBounce(); }
+});
+
+clock();
+setInterval(clock, 1000);
+tick();
+setInterval(tick, 2000);
+setLogTab("bili");
+setInterval(() => pullLogs(state.logKey), 1200);
+</script>
+</body>
+</html>
